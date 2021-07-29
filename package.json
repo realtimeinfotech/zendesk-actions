@@ -1,0 +1,25 @@
+{
+  "name": "zendesk-actions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realtimeinfotech/zendesk-actions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/realtimeinfotech/zendesk-actions/issues"
+  },
+  "homepage": "https://github.com/realtimeinfotech/zendesk-actions#readme",
+  "dependencies": {
+    "@actions/core": "^1.4.0",
+    "@actions/github": "^5.0.0",
+    "axios": "^0.21.1"
+  }
+}

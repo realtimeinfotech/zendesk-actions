@@ -1,0 +1,22 @@
+name: 'Zendesk Actions'
+description: 'Greet someone and record the time'
+inputs:
+  token:  # id of input
+    description: 'Zendesk API Token'
+    required: true
+    default: ''
+  org:
+    description: 'Github Organization'
+    required: true
+    default: 'Realtimeinfotech'
+  repo:
+    description: 'Github Repository'
+    required: true
+    default: 'realtime'
+outputs:
+  action_result: # id of output
+    description: 'Result of the action'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+
