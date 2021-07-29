@@ -3,8 +3,8 @@ const github = require('@actions/github');
 const axios = require('axios');
 
 async function GetAPIRequest() {
-	let response = await  axios.get('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
-	return response.data;
+	//let response = await  axios.get('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+	//return response.data;
 }
 
 function getIssueNumber(core, context) {
@@ -51,8 +51,33 @@ async function run() {
 		issue_number: issue_num
 	});
 
+	console.log(context);
 	console.log(issue);
-	return issue;
+	if (!issue) {
+		return;
+	}
+
+
+	const zendesk_id = getZendeskIdFromIssue(issue)
+	console.log(zendesk_id);
+	return "hi";
+}
+
+function getZendeskIdFromIssue(issue) {
+	if (!issue.title) {
+		return 0;
+	}
+	const title_parts = issue.title.split('-');
+	if(title_parts) {
+		const zendesk_id = parseInt(title_parts[0]);
+		if (isNan(zendesk_id)) {
+			return 0
+		}
+
+		return zendesk_id;
+	}
+
+	return 0;
 }
 
 run() 
