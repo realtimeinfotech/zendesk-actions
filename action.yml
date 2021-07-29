@@ -13,6 +13,10 @@ inputs:
     description: 'Github Repository'
     required: true
     default: 'realtime'
+  zd_token:
+    description: 'Zendesk API Token'
+    required: true
+    default: ''
 outputs:
   action_result: # id of output
     description: 'Result of the action'
