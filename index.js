@@ -43,6 +43,7 @@ async function run() {
 	const octokit = github.getOctokit(token);
 
 	if (issue_num === undefined) {
+		console.log("no issue number found");
 		return "No issue number found, no action taken";
 	}
 
@@ -53,6 +54,7 @@ async function run() {
 	});
 
 	if (!issue) {
+		console.log("no issue found");
 		return "No Issue found.";
 	}
 

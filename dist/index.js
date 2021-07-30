@@ -9782,6 +9782,7 @@ async function getIssue(issueNumber, owner, repo, api) {
 }
 
 async function run() {
+	console.log("run start");
 	const org = core.getInput('org');
 	const repo = core.getInput('repo');
 	const token = core.getInput('token');
@@ -9792,6 +9793,7 @@ async function run() {
 	const octokit = github.getOctokit(token);
 
 	if (issue_num === undefined) {
+		console.log("no issue number found");
 		return "No issue number found, no action taken";
 	}
 
@@ -9802,14 +9804,16 @@ async function run() {
 	});
 
 	if (!issue) {
-		return;
+		console.log("no issue found");
+		return "No Issue found.";
 	}
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
 	updateZendeskTicket(zendesk_id, column);
 
-	return "completed";
+	console.log("run end");
+	return "Job Completed";
 }
 
 function getZendeskIdFromIssue(issue) {
@@ -9837,7 +9841,8 @@ function getProjectColumnFromContext(context) {
 	];
 
 	if (!context || !context.project_card || !context.project_card.column_id) {
-		return "";
+		console.log("no context");
+		return "Cannot Find project_card or column_id in context";
 	}
 
 	const column_id = context.project_card.column_id;
@@ -9845,6 +9850,7 @@ function getProjectColumnFromContext(context) {
 		return c.id == column_id;
 	});
 
+	console.log(column);
 	return column[0];
 }
 
@@ -9852,6 +9858,7 @@ function updateZendeskTicket(zenedsk_id, project_column) {
 	if (project_column === 'qa')  {
 		setZendeskTicketStatus(zendesk_id, 'qa');
 	}
+	console.log(project_column);
 
 	return;
 }
