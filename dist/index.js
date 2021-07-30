@@ -9877,7 +9877,7 @@ async function setZendeskTicketStatus(zendesk_id, zd_status) {
 	const auth_token_raw = core.getInput('zd_token');
 	console.log(auth_token_raw);
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let request = axios.put('https://realitincsupport.zendesk.com/api/v2/tickets/223921.json', {
+	let zd_req = axios.put('https://realitincsupport.zendesk.com/api/v2/tickets/223921.json', {
 				'ticket': {
 					'custom_fields': [
 						{'id': 360045119013, 'value': 'qa' }
@@ -9898,6 +9898,7 @@ async function setZendeskTicketStatus(zendesk_id, zd_status) {
 		console.log(error)
 	});
 
+	console.log(zd_req);
 }
 
 run() 
