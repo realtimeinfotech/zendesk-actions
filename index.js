@@ -116,16 +116,15 @@ function getProjectColumnFromContext(context) {
 function updateZendeskTicket(zendesk_id, project_column) {
 	if (project_column.name === 'qa')  {
 		console.log('updating zendesk ticket ' + zendesk_id +'.  for project column ' + project_column.name);
-		setZendeskTicketStatus(zendesk_id, project_column.name).then((r) => {
+		let zd_request = setZendeskTicketStatus(zendesk_id, project_column.name).then((r) => {
 			console.log(r);
 		});
 	}
 	return;
 }
 
-async function setZendeskTicketStatus(zendesk_id, zd_status) {
+function setZendeskTicketStatus(zendesk_id, zd_status) {
 	const auth_token_raw = core.getInput('zd_token');
-	console.log(auth_token_raw);
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
 	let zd_req = axios.put('https://realitincsupport.zendesk.com/api/v2/tickets/223921.json', {
 				'ticket': {
