@@ -52,14 +52,14 @@ async function run() {
 	});
 
 	if (!issue) {
-		return;
+		return "No Issue found.";
 	}
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
 	updateZendeskTicket(zendesk_id, column);
 
-	return "completed";
+	return "Job Completed";
 }
 
 function getZendeskIdFromIssue(issue) {
@@ -95,6 +95,7 @@ function getProjectColumnFromContext(context) {
 		return c.id == column_id;
 	});
 
+	console.log(column);
 	return column[0];
 }
 
@@ -102,6 +103,7 @@ function updateZendeskTicket(zenedsk_id, project_column) {
 	if (project_column === 'qa')  {
 		setZendeskTicketStatus(zendesk_id, 'qa');
 	}
+	console.log(project_column);
 
 	return;
 }
