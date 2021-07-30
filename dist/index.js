@@ -9867,6 +9867,7 @@ function updateZendeskTicket(zendesk_id, project_column) {
 	if (project_column.name === 'qa')  {
 		console.log('updating zendesk ticket ' + zendesk_id +'.  for project column ' + project_column.name);
 		setZendeskTicketStatus(zendesk_id, project_column.name).then((r) => {
+			console.log('within update zendeskticket');
 			console.log(r);
 		});
 	}
@@ -9890,6 +9891,7 @@ async function setZendeskTicketStatus(zendesk_id, zd_status) {
 		}
 	)
 	.then((res) => {
+		console.log('within set status');
 		console.log(res.data)
 	})
 	.catch((error) => {
