@@ -90,12 +90,11 @@ function getProjectColumnFromContext(context) {
 		,{id: 15335031, name: "open"}
 	];
 
-	if (!context || !context.project_card || !context.project_card.column_id) {
-		console.log(context);
+	if (!context || !context.payload || !context.payload.project_card || !context.payload.project_card.column_id) {
 		return "Cannot Find project_card or column_id in context";
 	}
 
-	const column_id = context.project_card.column_id;
+	const column_id = context.payload.project_card.column_id;
 	const column = columns.filter(c => {
 		return c.id == column_id;
 	});
