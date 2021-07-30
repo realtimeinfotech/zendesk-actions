@@ -9897,7 +9897,7 @@ function setZendeskTicketStatus(zendesk_id, zd_status) {
 		console.log(error)
 	});
 
-	console.log(zd_req);
+	return zd_req;
 }
 
 run() 
