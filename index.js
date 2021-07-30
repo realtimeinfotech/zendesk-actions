@@ -115,12 +115,7 @@ function getProjectColumnFromContext(context) {
 
 function updateZendeskTicket(zendesk_id, project_column) {
 	if (project_column.name === 'qa')  {
-		setZendeskTicketStatus(zendesk_id, project_column.name).then(res => {
-			return "Success";
-		})
-		.catch((error) => {
-			console.error(error)
-		});
+		setZendeskTicketStatus(zendesk_id, project_column.name);
 	}
 
 	return;
