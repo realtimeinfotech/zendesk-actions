@@ -9765,7 +9765,7 @@ const rt_custom_fields = {
 		'arg': 'ticket.customField:custom_field_360045114893'
 		,'id': 360045114893
 	},
-	'caseStatus': {
+	'case_status': {
 		'arg': 'ticket.customField:custom_field_360045119013'
 		,'id': 360045119013
 	}
@@ -9793,6 +9793,68 @@ async function getIssue(issueNumber, owner, repo, api) {
 	});
 
 	return res;
+}
+
+function getZendeskIdFromIssue(issue) {
+	if (!issue.title) {
+		return 0;
+	}
+	const title_parts = issue.title.split('-');
+	if(title_parts) {
+		const zendesk_id = parseInt(title_parts[0]);
+		if (isNaN(zendesk_id)) {
+			return 0
+		}
+
+		return zendesk_id;
+	}
+
+	return 0;
+}
+
+// TODO: Solidy columns and expand these values
+function getProjectColumnFromContext(context) {
+	const columns = [
+		{id: 15338077, name: "qa"}
+		,{id: 15335031, name: "open"}
+		,{id: 15350799, name: "returned"}
+		
+	];
+
+	if (!context || !context.payload || !context.payload.project_card || !context.payload.project_card.column_id) {
+		return "Cannot Find project_card or column_id in context";
+	}
+
+	const column_id = context.payload.project_card.column_id;
+	const column = columns.filter(c => {
+		return c.id == column_id;
+	});
+
+	return column[0];
+}
+
+function setZendeskTicketStatus(zendesk_id, zd_status) {
+	const auth_token_raw = core.getInput('zd_token');
+	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
+	let zd_req = axios.put(`https://realitincsupport.zendesk.com/api/v2/tickets/${zendesk_id}.json`, {
+				'ticket': {
+					'custom_fields': [
+						{'id': rt_custom_fields.case_status.id, 'value': `${zd_status}` }
+					]
+				}
+		},
+		{
+			headers: {
+				'Authorization': `Basic ${encoded_token}`
+			}
+		}
+	)
+	.then((res) => { })
+	.catch((error) => {
+		console.log(error)
+	});
+
+	return zd_req;
 }
 
 async function run() {
@@ -9823,7 +9885,8 @@ async function run() {
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
 
-	if (column.name !== 'qa') {
+	const actionable_columns = ['qa','returned'];
+	if (actionable_columns.indexOf(column.name)) {
 		return `No action needed for column ${column.name}`;
 	}
 
@@ -9832,66 +9895,8 @@ async function run() {
 	return "Job Completed";
 }
 
-function getZendeskIdFromIssue(issue) {
-	if (!issue.title) {
-		return 0;
-	}
-	const title_parts = issue.title.split('-');
-	if(title_parts) {
-		const zendesk_id = parseInt(title_parts[0]);
-		if (isNaN(zendesk_id)) {
-			return 0
-		}
 
-		return zendesk_id;
-	}
-
-	return 0;
-}
-
-// TODO: Solidy columns and expand these values
-function getProjectColumnFromContext(context) {
-	const columns = [
-		{id: 15338077, name: "qa"}
-		,{id: 15335031, name: "open"}
-	];
-
-	if (!context || !context.payload || !context.payload.project_card || !context.payload.project_card.column_id) {
-		return "Cannot Find project_card or column_id in context";
-	}
-
-	const column_id = context.payload.project_card.column_id;
-	const column = columns.filter(c => {
-		return c.id == column_id;
-	});
-
-	return column[0];
-}
-
-function setZendeskTicketStatus(zendesk_id, zd_status) {
-	const auth_token_raw = core.getInput('zd_token');
-	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let zd_req = axios.put(`https://realitincsupport.zendesk.com/api/v2/tickets/${zendesk_id}.json`, {
-				'ticket': {
-					'custom_fields': [
-						{'id': 360045119013, 'value': `${zd_status}` }
-					]
-				}
-		},
-		{
-			headers: {
-				'Authorization': `Basic ${encoded_token}`
-			}
-		}
-	)
-	.then((res) => { })
-	.catch((error) => {
-		console.log(error)
-	});
-
-	return zd_req;
-}
-
+// TODO: handle errors and report the process as failed
 run() 
 	.then(result => {
 		console.log(result);
