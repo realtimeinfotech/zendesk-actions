@@ -103,7 +103,7 @@ function getProjectColumnFromContext(context) {
 	return column[0];
 }
 
-function updateZendeskTicket(zenedsk_id, project_column) {
+function updateZendeskTicket(zendesk_id, project_column) {
 	if (project_column.name === 'qa')  {
 		setZendeskTicketStatus(zendesk_id, project_column.name);
 	}
