@@ -72,11 +72,12 @@ async function run() {
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
-	//updateZendeskTicket(zendesk_id, column);
-	await setZendeskTicketStatus(zendesk_id, column.name).then((r) => {
-		console.log(r);
-	});
 
+	if (column.name !== 'qa') {
+		return `No action needed for column ${column.name}`;
+	}
+
+	await setZendeskTicketStatus(zendesk_id, column.name).then((r) => { });
 
 	return "Job Completed";
 }
@@ -117,23 +118,13 @@ function getProjectColumnFromContext(context) {
 	return column[0];
 }
 
-async function updateZendeskTicket(zendesk_id, project_column) {
-	if (project_column.name === 'qa')  {
-		console.log('updating zendesk ticket ' + zendesk_id +'.  for project column ' + project_column.name);
-		let zd_request = await setZendeskTicketStatus(zendesk_id, project_column.name).then((r) => {
-			console.log(r);
-		});
-	}
-	return;
-}
-
 function setZendeskTicketStatus(zendesk_id, zd_status) {
 	const auth_token_raw = core.getInput('zd_token');
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let zd_req = axios.put('https://realitincsupport.zendesk.com/api/v2/tickets/223921.json', {
+	let zd_req = axios.put(`https://realitincsupport.zendesk.com/api/v2/tickets/${zendesk_id}.json`, {
 				'ticket': {
 					'custom_fields': [
-						{'id': 360045119013, 'value': 'qa' }
+						{'id': 360045119013, 'value': `${zd_status}` }
 					]
 				}
 		},
@@ -143,10 +134,7 @@ function setZendeskTicketStatus(zendesk_id, zd_status) {
 			}
 		}
 	)
-	.then((res) => {
-		console.log('within set status');
-		console.log(res.data)
-	})
+	.then((res) => { })
 	.catch((error) => {
 		console.log(error)
 	});
