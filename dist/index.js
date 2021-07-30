@@ -9819,7 +9819,7 @@ function getZendeskIdFromIssue(issue) {
 	const title_parts = issue.title.split('-');
 	if(title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
-		if (isNan(zendesk_id)) {
+		if (isNaN(zendesk_id)) {
 			return 0
 		}
 
