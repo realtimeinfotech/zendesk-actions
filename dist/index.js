@@ -9752,10 +9752,24 @@ const core = __nccwpck_require__(6024);
 const github = __nccwpck_require__(5016);
 const axios = __nccwpck_require__(992);
 
-async function GetAPIRequest() {
-	//let response = await  axios.get('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
-	//return response.data;
-}
+const rt_custom_fields = {
+	'ticket_desc': {
+		'arg': 'ticket.customField:custom_field_360046040673'
+		,'id': 360046040673
+	},
+	'steps': {
+		'arg': 'ticket.customField:custom_field_360045445353'
+		,'id': 360045445353 
+	},
+	'category': {
+		'arg': 'ticket.customField:custom_field_360045114893'
+		,'id': 360045114893
+	},
+	'caseStatus': {
+		'arg': 'ticket.customField:custom_field_360045119013'
+		,'id': 360045119013
+	}
+};
 
 function getIssueNumber(core, context) {
 	let issueNumber = core.getInput("issue-number");
@@ -9782,7 +9796,6 @@ async function getIssue(issueNumber, owner, repo, api) {
 }
 
 async function run() {
-	console.log("run start");
 	const org = core.getInput('org');
 	const repo = core.getInput('repo');
 	const token = core.getInput('token');
@@ -9792,8 +9805,8 @@ async function run() {
   const owner_name = context.payload.repository.owner.login;
 	const octokit = github.getOctokit(token);
 
+
 	if (issue_num === undefined) {
-		console.log("no issue number found");
 		return "No issue number found, no action taken";
 	}
 
@@ -9804,7 +9817,6 @@ async function run() {
 	});
 
 	if (!issue) {
-		console.log("no issue found");
 		return "No Issue found.";
 	}
 
@@ -9812,7 +9824,6 @@ async function run() {
 	const column = getProjectColumnFromContext(context);
 	updateZendeskTicket(zendesk_id, column);
 
-	console.log("run end");
 	return "Job Completed";
 }
 
@@ -9849,20 +9860,44 @@ function getProjectColumnFromContext(context) {
 		return c.id == column_id;
 	});
 
-	console.log(column);
 	return column[0];
 }
 
 function updateZendeskTicket(zendesk_id, project_column) {
 	if (project_column.name === 'qa')  {
-		setZendeskTicketStatus(zendesk_id, project_column.name);
+		setZendeskTicketStatus(zendesk_id, project_column.name).then(res => {
+			return "Success";
+		})
+		.catch((error) => {
+			console.error(error)
+		});
 	}
 
 	return;
 }
 
 function setZendeskTicketStatus(zendesk_id, zd_status) {
-	console.log("status set to qa");
+	const auth_token_raw = core.getInput('zd_token');
+	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
+	axios.put('https://realitincsupport.zendesk.com/api/v2/tickets/223921.json', {
+				'ticket': {
+					'custom_fields': [
+						{'id': 360045119013, 'value': 'qa' }
+					]
+				}
+		},
+		{
+			headers: {
+				'Authorization': `Basic ${encoded_token}`
+			}
+		}
+	)
+	.then((res) => {
+		console.log(res.data)
+	})
+	.catch((error) => {
+		console.error(error)
+	});
 }
 
 run() 
