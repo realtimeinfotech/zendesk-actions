@@ -104,10 +104,9 @@ function getProjectColumnFromContext(context) {
 }
 
 function updateZendeskTicket(zenedsk_id, project_column) {
-	if (project_column === 'qa')  {
-		setZendeskTicketStatus(zendesk_id, 'qa');
+	if (project_column.name === 'qa')  {
+		setZendeskTicketStatus(zendesk_id, project_column.name);
 	}
-	console.log(project_column);
 
 	return;
 }
