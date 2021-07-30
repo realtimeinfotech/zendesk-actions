@@ -32,6 +32,7 @@ async function getIssue(issueNumber, owner, repo, api) {
 }
 
 async function run() {
+	console.log("run start");
 	const org = core.getInput('org');
 	const repo = core.getInput('repo');
 	const token = core.getInput('token');
@@ -59,6 +60,7 @@ async function run() {
 	const column = getProjectColumnFromContext(context);
 	updateZendeskTicket(zendesk_id, column);
 
+	console.log("run end");
 	return "Job Completed";
 }
 
@@ -87,7 +89,8 @@ function getProjectColumnFromContext(context) {
 	];
 
 	if (!context || !context.project_card || !context.project_card.column_id) {
-		return "";
+		console.log("no context");
+		return "Cannot Find project_card or column_id in context";
 	}
 
 	const column_id = context.project_card.column_id;
