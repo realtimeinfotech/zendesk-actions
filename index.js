@@ -114,7 +114,7 @@ function getProjectColumnFromContext(context) {
 }
 
 function updateZendeskTicket(zendesk_id, project_column) {
-	console.log('updating zendesk ticket ' + zendesk_id);
+	console.log('updating zendesk ticket ' + zendesk_id +'.  for project column ' + project_column.name);
 	if (project_column.name === 'qa')  {
 		setZendeskTicketStatus(zendesk_id, project_column.name).then(r => {
 			console.log(r);
