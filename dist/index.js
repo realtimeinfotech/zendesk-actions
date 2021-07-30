@@ -9895,8 +9895,9 @@ async function setZendeskTicketStatus(zendesk_id, zd_status) {
 		console.log(res.data)
 	})
 	.catch((error) => {
-		console.error(error)
+		console.log(error)
 	});
+
 }
 
 run() 
