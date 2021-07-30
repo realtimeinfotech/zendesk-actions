@@ -9801,16 +9801,15 @@ async function run() {
 		issue_number: issue_num
 	});
 
-	console.log(context);
-	console.log(issue);
 	if (!issue) {
 		return;
 	}
 
-
 	const zendesk_id = getZendeskIdFromIssue(issue)
-	console.log(zendesk_id);
-	return "hi";
+	const column = getProjectColumnFromContext(context);
+	updateZendeskTicket(zendesk_id, column);
+
+	return "completed";
 }
 
 function getZendeskIdFromIssue(issue) {
@@ -9828,6 +9827,37 @@ function getZendeskIdFromIssue(issue) {
 	}
 
 	return 0;
+}
+
+// TODO: Solidy columns and expand these values
+function getProjectColumnFromContext(context) {
+	const columns = [
+		{id: 15338077, name: "qa"}
+		,{id: 15335031, name: "open"}
+	];
+
+	if (!context || !context.project_card || !context.project_card.column_id) {
+		return "";
+	}
+
+	const column_id = context.project_card.column_id;
+	const column = columns.filter(c => {
+		return c.id == column_id;
+	});
+
+	return column[0];
+}
+
+function updateZendeskTicket(zenedsk_id, project_column) {
+	if (project_column === 'qa')  {
+		setZendeskTicketStatus(zendesk_id, 'qa');
+	}
+
+	return;
+}
+
+function setZendeskTicketStatus(zendesk_id, zd_status) {
+	console.log("status set to qa");
 }
 
 run() 
