@@ -91,7 +91,7 @@ function getProjectColumnFromContext(context) {
 	];
 
 	if (!context || !context.project_card || !context.project_card.column_id) {
-		console.log("no context");
+		console.log(context);
 		return "Cannot Find project_card or column_id in context";
 	}
 
