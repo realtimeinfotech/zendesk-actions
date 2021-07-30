@@ -9822,7 +9822,11 @@ async function run() {
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
-	updateZendeskTicket(zendesk_id, column);
+	//updateZendeskTicket(zendesk_id, column);
+	await setZendeskTicketStatus(zendesk_id, column.name).then((r) => {
+		console.log(r);
+	});
+
 
 	return "Job Completed";
 }
