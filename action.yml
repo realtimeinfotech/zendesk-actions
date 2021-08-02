@@ -21,6 +21,10 @@ inputs:
     description: 'Zendesk Base URL'
     required: true
     default: ''
+  zd_case_status_id:
+    description: 'Zendesk Case Status Id'
+    required: true
+    default: ''
 outputs:
   action_result: # id of output
     description: 'Result of the action'

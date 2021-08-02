@@ -2,25 +2,6 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
 
-const rt_custom_fields = {
-	'ticket_desc': {
-		'arg': 'ticket.customField:custom_field_360046040673'
-		,'id': 360046040673
-	},
-	'steps': {
-		'arg': 'ticket.customField:custom_field_360045445353'
-		,'id': 360045445353 
-	},
-	'category': {
-		'arg': 'ticket.customField:custom_field_360045114893'
-		,'id': 360045114893
-	},
-	'case_status': {
-		'arg': 'ticket.customField:custom_field_360045119013'
-		,'id': 360045119013
-	}
-};
-
 function getIssueNumber(core, context) {
 	let issueNumber = core.getInput("issue-number");
 
@@ -89,12 +70,13 @@ function getProjectColumnFromContext(context) {
 function setZendeskTicketStatus(zendesk_id, column) {
 	const auth_token_raw = core.getInput('zd_token');
 	const zendesk_base_url = core.getInput('zd_base_url')
+	const case_status_id = core.getInput('zd_case_status_id');
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
 	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, 
 		{
 				'ticket': {
 					'custom_fields': [
-						{ 'id': rt_custom_fields.case_status.id, 'value': `${column.zd_case_status}` }
+						{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
 					]
 				}
 		},
@@ -107,6 +89,7 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	.then((res) => { })
 	.catch((error) => {
 		console.log(error)
+		core.setFailed(error);
 	});
 
 	return zd_req;
@@ -153,7 +136,6 @@ async function run() {
 }
 
 
-// TODO: handle errors and report the process as failed
 run() 
 	.then(result => {
 		console.log(result);
