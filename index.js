@@ -85,8 +85,9 @@ function getProjectColumnFromContext(context) {
 
 function setZendeskTicketStatus(zendesk_id, zd_status) {
 	const auth_token_raw = core.getInput('zd_token');
+	const zendesk_base_url = core.getInput('zd_base_url')
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let zd_req = axios.put(`https://realitincsupport.zendesk.com/api/v2/tickets/${zendesk_id}.json`, {
+	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, {
 				'ticket': {
 					'custom_fields': [
 						{'id': rt_custom_fields.case_status.id, 'value': `${zd_status}` }

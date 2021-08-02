@@ -17,6 +17,10 @@ inputs:
     description: 'Zendesk API Token'
     required: true
     default: ''
+  zendesk_base_url:
+    description: 'Zendesk Base URL'
+    required: true
+    default: ''
 outputs:
   action_result: # id of output
     description: 'Result of the action'
