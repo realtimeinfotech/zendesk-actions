@@ -138,8 +138,7 @@ async function run() {
 	const column = getProjectColumnFromContext(context);
 
 	const actionable_columns = ['qa','returned', 'open'];
-	if (actionable_columns.indexOf(column.name)) {
-		console.log(column);
+	if (actionable_columns.indexOf(column.name) < 0) {
 		return `No action needed for column ${column.name}`;
 	}
 
