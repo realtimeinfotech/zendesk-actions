@@ -9797,13 +9797,15 @@ async function getIssue(issueNumber, owner, repo, api) {
 
 function getZendeskIdFromIssue(issue) {
 	if (!issue.title) {
-		return 0;
+		core.setFailed("No Issue title");
+		return;
 	}
 	const title_parts = issue.title.split('-');
 	if(title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
-			return 0
+			core.setFailed("Cannot parse zendesk id");
+			return;
 		}
 
 		return zendesk_id;
@@ -9822,7 +9824,8 @@ function getProjectColumnFromContext(context) {
 	];
 
 	if (!context || !context.payload || !context.payload.project_card || !context.payload.project_card.column_id) {
-		return "Cannot Find project_card or column_id in context";
+		core.setFailed("Cannot Find project_card or column_id in context");
+		return;
 	}
 
 	const column_id = context.payload.project_card.column_id;
@@ -9871,7 +9874,8 @@ async function run() {
 
 
 	if (issue_num === undefined) {
-		return "No issue number found, no action taken";
+		core.setFailed("No Issue number found, no action taken");
+		return {};
 	}
 
 	const { data: issue } = await octokit.rest.issues.get({
@@ -9881,7 +9885,8 @@ async function run() {
 	});
 
 	if (!issue) {
-		return "No Issue found.";
+		core.setFailed("No Issue found");
+		return {};
 	}
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
@@ -9903,7 +9908,7 @@ run()
 	.then(result => {
 		console.log(result);
 	}, err => {
-		console.log(err);
+		core.setFailed(err);
 	})
 	.then(() => {
 		process.exit();
