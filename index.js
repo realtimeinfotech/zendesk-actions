@@ -139,6 +139,7 @@ async function run() {
 
 	const actionable_columns = ['qa','returned', 'open'];
 	if (actionable_columns.indexOf(column.name)) {
+		console.log(column);
 		return `No action needed for column ${column.name}`;
 	}
 
