@@ -71,6 +71,7 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	const auth_token_raw = core.getInput('zd_token');
 	const zendesk_base_url = core.getInput('zd_base_url')
 	const case_status_id = core.getInput('zd_case_status_id');
+	console.log(case_status_id);
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
 	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, 
 		{
