@@ -17,7 +17,7 @@ inputs:
     description: 'Zendesk API Token'
     required: true
     default: ''
-  zendesk_base_url:
+  zd_base_url:
     description: 'Zendesk Base URL'
     required: true
     default: ''
