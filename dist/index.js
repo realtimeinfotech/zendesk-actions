@@ -9850,7 +9850,7 @@ async function run() {
 
 	if (issue_num === undefined) {
 		core.setFailed("No Issue number found, no action taken");
-		return {};
+		return "error";
 	}
 
 	const { data: issue } = await octokit.rest.issues.get({
@@ -9861,7 +9861,7 @@ async function run() {
 
 	if (!issue) {
 		core.setFailed("No Issue found");
-		return {};
+		return "error";
 	}
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
