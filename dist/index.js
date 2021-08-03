@@ -9844,7 +9844,7 @@ async function run() {
 	const context = github.context;
 	const issue_num = getIssueNumber(core, context);
 	const repo_name = context.payload.repository.name;
-  const owner_name = context.payload.repository.owner.login;
+	const owner_name = context.payload.repository.owner.login;
 	const octokit = github.getOctokit(token);
 
 
