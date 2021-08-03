@@ -9766,16 +9766,6 @@ function getIssueNumber(core, context) {
 	return issueNumber;
 }
 
-async function getIssue(issueNumber, owner, repo, api) {
-	const res = await api.rest.issues.get({
-		owner: owner,
-		repo: repo,
-		issue_number: issueNumber,
-	});
-
-	return res;
-}
-
 function getZendeskIdFromIssue(issue) {
 	if (!issue.title) {
 		core.setFailed("No Issue title");
@@ -9792,7 +9782,8 @@ function getZendeskIdFromIssue(issue) {
 		return zendesk_id;
 	}
 
-	return 0;
+	core.setFailed("Unable to parse zendesk id from title.");
+	return;
 }
 
 // TODO: Solidify columns and expand these values
@@ -9800,7 +9791,8 @@ function getProjectColumnFromContext(context) {
 	const columns = [
 		{id: 15338077, name: "qa", zd_case_status: "qa"}
 		,{id: 15335031, name: "open", zd_case_status: "programming"}
-		,{id: 15350799, name: "returned", zd_case_status: "returned"}
+		,{id: 15350799, name: "returned", zd_case_status: "programmer-returned"}
+		,{id: 15399629, name: "resolved", zd_case_status: "programmer-resolved"}
 		
 	];
 
@@ -9821,15 +9813,14 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	const auth_token_raw = core.getInput('zd_token');
 	const zendesk_base_url = core.getInput('zd_base_url')
 	const case_status_id = core.getInput('zd_case_status_id');
-	console.log(case_status_id);
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
 	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, 
 		{
-				'ticket': {
-					'custom_fields': [
-						{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
-					]
-				}
+			'ticket': {
+				'custom_fields': [
+					{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
+				]
+			}
 		},
 		{
 			headers: {
@@ -9876,7 +9867,7 @@ async function run() {
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
 
-	const actionable_columns = ['qa','returned', 'open'];
+	const actionable_columns = ['qa','returned','open','resolved'];
 	if (actionable_columns.indexOf(column.name) < 0) {
 		return `No action needed for column ${column.name}`;
 	}
@@ -9885,7 +9876,6 @@ async function run() {
 
 	return "Job Completed";
 }
-
 
 run() 
 	.then(result => {
