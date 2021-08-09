@@ -9867,6 +9867,7 @@ async function run() {
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
 
+	console.log(column);
 	const actionable_columns = ['qa','returned','open','resolved'];
 	if (actionable_columns.indexOf(column.name) < 0) {
 		return `No action needed for column ${column.name}`;
