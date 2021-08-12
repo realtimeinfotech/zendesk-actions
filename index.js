@@ -25,14 +25,14 @@ function getZendeskIdFromIssue(issue) {
 	if(title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
-			core.setFailed("Cannot parse zendesk id");
+			core.notice("Cannot parse zendesk id");
 			return;
 		}
 
 		return zendesk_id;
 	}
 
-	core.setFailed("Unable to parse zendesk id from title.");
+	core.warning("Unable to parse zendesk id from title.");
 	return;
 }
 
