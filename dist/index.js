@@ -9039,12 +9039,14 @@ async function run() {
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	const column = getProjectColumnFromContext(context);
 	if (!column) {
-		return "No action required";
+		core.notice("No Action required");
+		return;
 	}
 
 	const actionable_columns = ['qa','returned','open','resolved'];
 	if (actionable_columns.indexOf(column.name) < 0) {
-		return `No action needed for column ${column.name}`;
+		core.notice(`No action needed for column ${column.name}`);
+		return;
 	}
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
