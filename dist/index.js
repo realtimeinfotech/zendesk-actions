@@ -8947,7 +8947,7 @@ function getZendeskIdFromIssue(issue) {
 	if(title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
-			core.notice("Cannot parse zendesk id");
+			core.info("Cannot parse zendesk id");
 			return;
 		}
 
@@ -9040,14 +9040,14 @@ async function run() {
 	const column = getProjectColumnFromContext(context);
 	if (!column) {
 		console.log(core);
-		core.notice("No Action required");
+		core.info("No Action required");
 		return;
 	}
 
 	const actionable_columns = ['qa','returned','open','resolved'];
 	if (actionable_columns.indexOf(column.name) < 0) {
 		console.log(core);
-		core.notice(`No action needed for column ${column.name}`);
+		core.info(`No action needed for column ${column.name}`);
 		return;
 	}
 
