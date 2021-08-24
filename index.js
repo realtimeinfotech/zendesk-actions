@@ -19,14 +19,14 @@ function getIssueNumber(core, context) {
 function getZendeskIdFromIssue(issue) {
 	if (!issue.title) {
 		core.setFailed("No Issue title");
-		return;
+		return 0;
 	}
 	const title_parts = issue.title.split('-');
 	if(title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
 			core.warning("Cannot parse zendesk id");
-			return "";
+			return 0;
 		}
 
 		return zendesk_id;
@@ -115,6 +115,9 @@ async function run() {
 	}
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
+	if (zendesk_id === 0) {
+		return "";
+	}
 	const column = getProjectColumnFromContext(context);
 	if (!column) {
 		core.info("No Action required");
@@ -123,7 +126,6 @@ async function run() {
 
 	const actionable_columns = ['qa','returned','open','resolved'];
 	if (actionable_columns.indexOf(column.name) < 0) {
-		console.log(core);
 		core.info(`No action needed for column ${column.name}`);
 		return "";
 	}
