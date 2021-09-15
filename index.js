@@ -111,7 +111,7 @@ async function log(context, issue_num, zendesk_id, column_name, rep) {
 
 
 async function getRTToken() {
-	const rt_api_token = core.getInput('rt-api-token');
+	const rt_api_token = core.getInput('rt_api_token');
 	let form = new FormData();
 	form.append('refreshToken', rt_api_token);
 	let access_token = await axios.post('https://api.fridaysis.com/v1/token', form);
