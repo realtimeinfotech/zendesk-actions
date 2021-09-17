@@ -87,7 +87,7 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	return zd_req;
 }
 
-async function log(context, issue_num, zendesk_id, column_name, rep) {
+async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 	try {
 		await getRTToken().then(t => {
 			const access_token = t.data.accessToken || '';
@@ -164,7 +164,7 @@ async function run() {
 	const rep = getRepFromContext(context);
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
-	await log(context, issue_num, zendesk_id, column.name, 'jon doe');
+	await log(context, issue_num, zendesk_id, column.name, issue, 'jon doe');
 
 	return "Job Completed";
 }
