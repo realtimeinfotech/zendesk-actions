@@ -87,6 +87,37 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	return zd_req;
 }
 
+async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
+	try {
+		await getRTToken().then(t => {
+			const access_token = t.data.accessToken || '';
+			const config = {
+					headers: { Authorization: `Bearer ${access_token}`}
+			};
+			const request_body = {
+				"ZendeskTicketId": zendesk_id,
+				"GithubIssueNumber": issue_num,
+				"CaseStatus": column_name,
+				"SupportRep": rep
+			};
+			axios.post(
+				'https://api.fridaysis.com/v1/githubissuelog',
+				request_body,
+				config
+			).then();
+		});
+	} catch (error) { }
+}
+
+
+async function getRTToken() {
+	const rt_api_token = core.getInput('rt_api_token');
+	let form = new FormData();
+	form.append('refreshToken', rt_api_token);
+	let access_token = await axios.post('https://api.fridaysis.com/v1/token', form);
+	return access_token;
+}
+
 async function run() {
 	const org = core.getInput('org');
 	const repo = core.getInput('repo');
@@ -130,7 +161,10 @@ async function run() {
 		return "";
 	}
 
+	const rep = getRepFromContext(context);
+
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
+	await log(context, issue_num, zendesk_id, column.name, issue, 'jon doe');
 
 	return "Job Completed";
 }
