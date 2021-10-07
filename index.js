@@ -163,15 +163,31 @@ async function run() {
 
 
 	try {
-		const rep = getRepFromContext(context);
+		const rep = getRepFromIssue(issue);
 		await log(context, issue_num, zendesk_id, column.name, issue, rep);
 	} catch (error) {
-		console.log(issue);
+		console.log(issue.body);
 	}
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
 
 	return "Job Completed";
+}
+
+function getRepFromIssue(issue) {
+	var issue_as_arr = issue.body.split('\n');
+	var issue_assignee = issue_as_arr.filter(s => {
+		return s.includes("**Assignee:**");
+	});
+	var rep = 'unkown';
+	if (issue_assignee.length === 1) {
+		rep_from_issue = issue_assignee[0].replace('**Assignee:**', '').trim();
+		if (rep_from_issue !== "") {
+			rep = rep_from_issue;
+		}
+	}
+
+	return rep;
 }
 
 run() 
