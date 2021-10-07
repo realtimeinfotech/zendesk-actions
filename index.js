@@ -166,7 +166,7 @@ async function run() {
 		const rep = getRepFromContext(context);
 		await log(context, issue_num, zendesk_id, column.name, issue, rep);
 	} catch (error) {
-		console.log(context);
+		console.log(issue);
 	}
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
