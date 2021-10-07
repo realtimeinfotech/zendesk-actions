@@ -9336,10 +9336,15 @@ async function run() {
 		return "";
 	}
 
-	const rep = getRepFromContext(context);
+
+	try {
+		const rep = getRepFromContext(context);
+		await log(context, issue_num, zendesk_id, column.name, issue, rep);
+	} catch (error) {
+		console.log(context);
+	}
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
-	await log(context, issue_num, zendesk_id, column.name, issue, 'jon doe');
 
 	return "Job Completed";
 }
