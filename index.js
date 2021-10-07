@@ -106,7 +106,9 @@ async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 				config
 			).then();
 		});
-	} catch (error) { }
+	} catch (error) {
+		console.log(error);
+	}
 }
 
 
