@@ -1,4 +1,4 @@
-const core = required('@actions/core');
+const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
 const FormData = require('form-data');
