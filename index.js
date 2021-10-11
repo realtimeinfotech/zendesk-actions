@@ -195,7 +195,8 @@ run()
 	.then(result => {
 		console.log(result);
 	}, err => {
-		core.setFailed(err);
+		//core.setFailed(err);
+		console.log(err);
 	})
 	.then(() => {
 		process.exit();
