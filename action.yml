@@ -25,6 +25,10 @@ inputs:
     description: 'Zendesk Case Status Id'
     required: true
     default: ''
+  rt_api_token:
+    description: 'Realtime API token'
+    required: true
+    default: ''
 outputs:
   action_result: # id of output
     description: 'Result of the action'
