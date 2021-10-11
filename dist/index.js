@@ -10807,9 +10807,19 @@ async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 
 async function getRTToken() {
 	const rt_api_token = core.getInput('rt_api_token');
-	let form = new FormData();
-	form.append('refreshToken', rt_api_token);
-	let access_token = await axios.post('https://api.fridaysis.com/v1/token', form);
+	let data = JSON.stringify({
+		'refreshToken': `${rt_api_token}`
+	});
+
+	let config = {
+		method: 'post',
+		url: 'https://api.fridaysis.com/v1/token/accesstoken',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		data: data
+	};
+	let access_token = axios(config);
 	return access_token;
 }
 
