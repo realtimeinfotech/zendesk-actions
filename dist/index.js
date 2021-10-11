@@ -10867,14 +10867,12 @@ async function run() {
 	}
 
 
-	/*
 	try {
 		const rep = getRepFromIssue(issue);
 		await log(context, issue_num, zendesk_id, column.name, issue, rep);
 	} catch (error) {
-		console.log(issue.body);
+		//console.log(issue.body);
 	}
-	*/
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
 
