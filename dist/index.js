@@ -10780,6 +10780,7 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	return zd_req;
 }
 
+
 async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 	try {
 		await getRTToken().then(t => {
@@ -10821,6 +10822,20 @@ async function getRTToken() {
 	};
 	let access_token = axios(config);
 	return access_token;
+}
+
+async function setStatusComment(octokit, owner, repo, issue_number, body) {
+	try {
+		await octokit.rest.issues.createComment({
+			owner,
+			repo,
+			issue_number,
+			body
+		});
+	} catch (error) {
+		console.log(error);
+		return error;
+	}
 }
 
 async function run() {
@@ -10870,11 +10885,11 @@ async function run() {
 	try {
 		const rep = getRepFromIssue(issue);
 		await log(context, issue_num, zendesk_id, column.name, issue, rep);
-	} catch (error) {
-		//console.log(issue.body);
-	}
+	} catch (error) { }
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
+	const status_comment = `Status has been set: ${column.name}.`;
+	await setStatusComment(octokit, owner_name, repo, issue_num, status_comment);
 
 	return "Job Completed";
 }
