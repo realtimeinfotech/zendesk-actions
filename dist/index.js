@@ -10888,7 +10888,7 @@ async function run() {
 	} catch (error) { }
 
 	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
-	const status_comment = `Status has been set: ${column.name}.`;
+	const status_comment = `Zendesk ticket status has been set to ${column.name}.`;
 	await setStatusComment(octokit, owner_name, repo, issue_num, status_comment);
 
 	return "Job Completed";
