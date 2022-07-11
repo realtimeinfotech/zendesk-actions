@@ -60,20 +60,14 @@ function getProjectColumnFromContext(context) {
 	return column[0];
 }
 
-function setZendeskTicketStatus(zendesk_id, column) {
+function setZendeskTicketStatus(zendesk_id, column, issue) {
 	const auth_token_raw = core.getInput('zd_token');
 	const zendesk_base_url = core.getInput('zd_base_url')
 	const case_status_id = core.getInput('zd_case_status_id');
+	let payload = getTicketPayload(column, issue, case_status_id);
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, 
-		{
-			'ticket': {
-				'custom_fields': [
-					{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
-				]
-			}
-		},
-		{
+	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
+		,{
 			headers: {
 				'Authorization': `Basic ${encoded_token}`
 			}
@@ -86,6 +80,39 @@ function setZendeskTicketStatus(zendesk_id, column) {
 	});
 
 	return zd_req;
+}
+
+function getTicketPayload(column, issue, case_status_id) {
+	var payload = {
+		'ticket': {
+			'custom_fields': [
+				{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
+			]
+		}
+	};
+
+	if (column.name === "resolved") {
+		return payload;
+	}
+
+
+	if (issue.labels && issue.labels.length > 0) {
+		let awaiting = issue.labels.find(l => l.name == "Awaiting Verification");
+		if (awaiting) {
+			payload = {
+				'ticket': {
+					'custom_fields': [
+						{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
+					]
+					,'followers': [
+						{ "user_id": 415082549274 }
+					]
+				}
+			};
+		}
+	}
+
+	return payload;
 }
 
 
@@ -195,7 +222,7 @@ async function run() {
 		await log(context, issue_num, zendesk_id, column.name, issue, rep);
 	} catch (error) { }
 
-	await setZendeskTicketStatus(zendesk_id, column).then((r) => { });
+	await setZendeskTicketStatus(zendesk_id, column, issue).then((r) => { });
 	const status_comment = `Zendesk ticket status has been set to ${column.name}.`;
 	await setStatusComment(octokit, owner_name, repo, issue_num, status_comment);
 
