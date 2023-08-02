@@ -1,7 +1,6 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const axios = require('axios');
-const FormData = require('form-data');
+import core, { setFailed, warning, getInput, info } from '@actions/core';
+import { context as _context, getOctokit } from '@actions/github';
+import axios, { put, post } from 'axios';
 
 function getIssueNumber(core, context) {
 	let issueNumber = core.getInput("issue-number");
@@ -19,21 +18,21 @@ function getIssueNumber(core, context) {
 
 function getZendeskIdFromIssue(issue) {
 	if (!issue.title) {
-		core.setFailed("No Issue title");
+		setFailed("No Issue title");
 		return 0;
 	}
 	const title_parts = issue.title.split('-');
 	if(title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
-			core.warning("Cannot parse zendesk id");
+			warning("Cannot parse zendesk id");
 			return 0;
 		}
 
 		return zendesk_id;
 	}
 
-	core.warning("Unable to parse zendesk id from title.");
+	warning("Unable to parse zendesk id from title.");
 	return;
 }
 
@@ -48,7 +47,7 @@ function getProjectColumnFromContext(context) {
 	];
 
 	if (!context || !context.payload || !context.payload.project_card || !context.payload.project_card.column_id) {
-		core.setFailed("Cannot Find project_card or column_id in context");
+		setFailed("Cannot Find project_card or column_id in context");
 		return;
 	}
 
@@ -61,12 +60,12 @@ function getProjectColumnFromContext(context) {
 }
 
 function setZendeskTicketStatus(zendesk_id, column, issue) {
-	const auth_token_raw = core.getInput('zd_token');
-	const zendesk_base_url = core.getInput('zd_base_url')
-	const case_status_id = core.getInput('zd_case_status_id');
+	const auth_token_raw = getInput('zd_token');
+	const zendesk_base_url = getInput('zd_base_url')
+	const case_status_id = getInput('zd_case_status_id');
 	let payload = getTicketPayload(column, issue, case_status_id);
 	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
+	let zd_req = put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
 		,{
 			headers: {
 				'Authorization': `Basic ${encoded_token}`
@@ -76,7 +75,7 @@ function setZendeskTicketStatus(zendesk_id, column, issue) {
 	.then((res) => { })
 	.catch((error) => {
 		console.log(error)
-		core.setFailed(error);
+		setFailed(error);
 	});
 
 	return zd_req;
@@ -129,7 +128,7 @@ async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 				"CaseStatus": column_name,
 				"SupportRep": rep
 			};
-			axios.post(
+			post(
 				'https://api.fridaysis.com/v1/githubissuelog',
 				request_body,
 				config
@@ -142,7 +141,7 @@ async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 
 
 async function getRTToken() {
-	const rt_api_token = core.getInput('rt_api_token');
+	const rt_api_token = getInput('rt_api_token');
 	let data = JSON.stringify({
 		'refreshToken': `${rt_api_token}`
 	});
@@ -174,18 +173,18 @@ async function setStatusComment(octokit, owner, repo, issue_number, body) {
 }
 
 async function run() {
-	const org = core.getInput('org');
-	const repo = core.getInput('repo');
-	const token = core.getInput('token');
-	const context = github.context;
+	const org = getInput('org');
+	const repo = getInput('repo');
+	const token = getInput('token');
+	const context = _context;
 	const issue_num = getIssueNumber(core, context);
 	const repo_name = context.payload.repository.name;
 	const owner_name = context.payload.repository.owner.login;
-	const octokit = github.getOctokit(token);
+	const octokit = getOctokit(token);
 
 
 	if (issue_num === undefined) {
-		core.setFailed("No Issue number found, no action taken");
+		setFailed("No Issue number found, no action taken");
 		return "error";
 	}
 
@@ -196,7 +195,7 @@ async function run() {
 	});
 
 	if (!issue) {
-		core.setFailed("No Issue found");
+		setFailed("No Issue found");
 		return "error";
 	}
 
@@ -206,13 +205,13 @@ async function run() {
 	}
 	const column = getProjectColumnFromContext(context);
 	if (!column) {
-		core.info("No Action required");
+		info("No Action required");
 		return "";
 	}
 
 	const actionable_columns = ['qa','returned','open','resolved'];
 	if (actionable_columns.indexOf(column.name) < 0) {
-		core.info(`No action needed for column ${column.name}`);
+		info(`No action needed for column ${column.name}`);
 		return "";
 	}
 
@@ -222,7 +221,7 @@ async function run() {
 		await log(context, issue_num, zendesk_id, column.name, issue, rep);
 	} catch (error) { }
 
-	await setZendeskTicketStatus(zendesk_id, column, issue).then((r) => { });
+	await setZendeskTicketStatus(zendesk_id, column, issue).then((_) => { });
 	const status_comment = `Zendesk ticket status has been set to ${column.name}.`;
 	await setStatusComment(octokit, owner_name, repo, issue_num, status_comment);
 
@@ -236,7 +235,7 @@ function getRepFromIssue(issue) {
 	});
 	var rep = 'unkown';
 	if (issue_assignee.length === 1) {
-		rep_from_issue = issue_assignee[0].replace('**Assignee:**', '').trim();
+		const rep_from_issue = issue_assignee[0].replace('**Assignee:**', '').trim();
 		if (rep_from_issue !== "") {
 			rep = rep_from_issue;
 		}
@@ -249,7 +248,7 @@ run()
 	.then(result => {
 		console.log(result);
 	}, err => {
-		core.setFailed(err);
+		setFailed(err);
 	})
 	.then(() => {
 		process.exit();
