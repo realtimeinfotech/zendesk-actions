@@ -33,6 +33,6 @@ outputs:
   action_result: # id of output
     description: 'Result of the action'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 

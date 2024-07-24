@@ -1,17 +1,14 @@
-import core, { setFailed, warning, getInput, info } from '@actions/core';
+import { setFailed, warning, getInput, notice } from '@actions/core';
 import { context as _context, getOctokit } from '@actions/github';
-import axios, { put, post } from 'axios';
+import axios from 'axios';
 
-function getIssueNumber(core, context) {
-	let issueNumber = core.getInput("issue-number");
+function getIssueNumber(context) {
+	let issueNumber = getInput("issue-number");
 
 	if (issueNumber) return issueNumber;
 
 	issueNumber = context.payload.issue && context.payload.issue.number;
 	if (issueNumber) return issueNumber;
-
-	let card_url = context.payload.project_card && context.payload.project_card.content_url;
-	issueNumber = card_url && card_url.split("/").pop();
 
 	return issueNumber;
 }
@@ -22,11 +19,12 @@ function getZendeskIdFromIssue(issue) {
 		return 0;
 	}
 	const title_parts = issue.title.split('-');
-	if(title_parts) {
+
+	if (title_parts) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
 			warning("Cannot parse zendesk id");
-			return 0;
+			return;
 		}
 
 		return zendesk_id;
@@ -36,61 +34,48 @@ function getZendeskIdFromIssue(issue) {
 	return;
 }
 
-// TODO: Solidify columns and expand these values
-function getProjectColumnFromContext(context) {
-	const columns = [
-		{id: 15338077, name: "qa", zd_case_status: "qa"}
-		,{id: 15335031, name: "open", zd_case_status: "programming"}
-		,{id: 15350799, name: "returned", zd_case_status: "programmer-returned"}
-		,{id: 15399629, name: "resolved", zd_case_status: "programmer-resolved"}
-		
-	];
+function getZenDeskStatusFromLabel(labelName) {
+	const zendeskCaseStatus = {
+	'Awaiting Verification': 'programmer-resolved',
+		'QA': 'qa',
+		'Returned to Support': 'programmer-returned'
+	};
 
-	if (!context || !context.payload || !context.payload.project_card || !context.payload.project_card.column_id) {
-		setFailed("Cannot Find project_card or column_id in context");
-		return;
-	}
 
-	const column_id = context.payload.project_card.column_id;
-	const column = columns.filter(c => {
-		return c.id == column_id;
-	});
-
-	return column[0];
+	return zendeskCaseStatus[labelName];
 }
 
-function setZendeskTicketStatus(zendesk_id, column, issue) {
+function setZendeskTicketStatus(zendesk_id, caseStatus, issue) {
 	const auth_token_raw = getInput('zd_token');
 	const zendesk_base_url = getInput('zd_base_url')
 	const case_status_id = getInput('zd_case_status_id');
-	let payload = getTicketPayload(column, issue, case_status_id);
-	let encoded_token = Buffer.from(auth_token_raw).toString('base64')
-	let zd_req = put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
-		,{
+	let payload = getTicketPayload(caseStatus, issue, case_status_id);
+	const encoded_token = Buffer.from(auth_token_raw).toString('base64')
+	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
+		, {
 			headers: {
 				'Authorization': `Basic ${encoded_token}`
 			}
 		}
 	)
-	.then((res) => { })
-	.catch((error) => {
-		console.log(error)
-		setFailed(error);
-	});
+		.then(() => { })
+		.catch((error) => {
+			setFailed(error);
+		});
 
 	return zd_req;
 }
 
-function getTicketPayload(column, issue, case_status_id) {
-	var payload = {
+function getTicketPayload(caseStatus, issue, case_status_id) {
+	let payload = {
 		'ticket': {
 			'custom_fields': [
-				{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
+				{ 'id': case_status_id, 'value': `${caseStatus}` }
 			]
 		}
 	};
 
-	if (column.name === "resolved") {
+	if (caseStatus === "programmer-returned") {
 		return payload;
 	}
 
@@ -101,9 +86,9 @@ function getTicketPayload(column, issue, case_status_id) {
 			payload = {
 				'ticket': {
 					'custom_fields': [
-						{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
+						{ 'id': case_status_id, 'value': `${caseStatus}` }
 					]
-					,'followers': [
+					, 'followers': [
 						{ "user_id": 415082549274 }
 					]
 				}
@@ -115,20 +100,20 @@ function getTicketPayload(column, issue, case_status_id) {
 }
 
 
-async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
+async function log(issue_num, zendesk_id, caseStatus, rep) {
 	try {
 		await getRTToken().then(t => {
 			const access_token = t.data.accessToken || '';
 			const config = {
-					headers: { Authorization: `Bearer ${access_token}`}
+				headers: { Authorization: `Bearer ${access_token}` }
 			};
 			const request_body = {
 				"ZendeskTicketId": zendesk_id,
 				"GithubIssueNumber": issue_num,
-				"CaseStatus": column_name,
+				"CaseStatus": caseStatus,
 				"SupportRep": rep
 			};
-			post(
+			axios.post(
 				'https://api.fridaysis.com/v1/githubissuelog',
 				request_body,
 				config
@@ -142,11 +127,11 @@ async function log(context, issue_num, zendesk_id, column_name, issue, rep) {
 
 async function getRTToken() {
 	const rt_api_token = getInput('rt_api_token');
-	let data = JSON.stringify({
+	const data = JSON.stringify({
 		'refreshToken': `${rt_api_token}`
 	});
 
-	let config = {
+	const config = {
 		method: 'post',
 		url: 'https://api.fridaysis.com/v1/token/accesstoken',
 		headers: {
@@ -154,7 +139,7 @@ async function getRTToken() {
 		},
 		data: data
 	};
-	let access_token = axios(config);
+	const access_token = axios(config);
 	return access_token;
 }
 
@@ -172,12 +157,19 @@ async function setStatusComment(octokit, owner, repo, issue_number, body) {
 	}
 }
 
+function GetLabelFromPayload(payload) {
+	const label = payload.label;
+
+	return label;
+}
+
+
 async function run() {
-	const org = getInput('org');
 	const repo = getInput('repo');
 	const token = getInput('token');
+
 	const context = _context;
-	const issue_num = getIssueNumber(core, context);
+	const issue_num = getIssueNumber(context);
 	const repo_name = context.payload.repository.name;
 	const owner_name = context.payload.repository.owner.login;
 	const octokit = getOctokit(token);
@@ -196,44 +188,48 @@ async function run() {
 
 	if (!issue) {
 		setFailed("No Issue found");
-		return "error";
+		return;
 	}
+
+	const actionableLabels = ['Awaiting Verification', 'QA', 'Returned to Support',];
+	const label = GetLabelFromPayload(context.payload);
+	if (!label) {
+		setFailed("No label found");
+		return;
+	}
+	const takeAction = actionableLabels.includes(label.name);
+
+	if (!takeAction) {
+		notice("Non-actionable label")
+		return;
+	}
+	const zendeskCastStatus = getZenDeskStatusFromLabel(label.name);
 
 	const zendesk_id = getZendeskIdFromIssue(issue)
 	if (zendesk_id === 0) {
-		return "";
+		notice("Bad Zendesk ID");
+		return;
 	}
-	const column = getProjectColumnFromContext(context);
-	if (!column) {
-		info("No Action required");
-		return "";
-	}
-
-	const actionable_columns = ['qa','returned','open','resolved'];
-	if (actionable_columns.indexOf(column.name) < 0) {
-		info(`No action needed for column ${column.name}`);
-		return "";
-	}
-
 
 	try {
 		const rep = getRepFromIssue(issue);
-		await log(context, issue_num, zendesk_id, column.name, issue, rep);
+		await log(issue_num, zendesk_id, zendeskCastStatus, rep);
 	} catch (error) { }
 
-	await setZendeskTicketStatus(zendesk_id, column, issue).then((_) => { });
-	const status_comment = `Zendesk ticket status has been set to ${column.name}.`;
+	await setZendeskTicketStatus(zendesk_id, zendeskCastStatus, issue).then((_) => { });
+	const status_comment = `Zendesk ticket status has been set to ${zendeskCastStatus}.`;
 	await setStatusComment(octokit, owner_name, repo, issue_num, status_comment);
 
+	notice("Job Completed");
 	return "Job Completed";
 }
 
 function getRepFromIssue(issue) {
-	var issue_as_arr = issue.body.split('\n');
-	var issue_assignee = issue_as_arr.filter(s => {
+	const issue_as_arr = issue.body.split('\n');
+	const issue_assignee = issue_as_arr.filter(s => {
 		return s.includes("**Assignee:**");
 	});
-	var rep = 'unkown';
+	let rep = 'unkown';
 	if (issue_assignee.length === 1) {
 		const rep_from_issue = issue_assignee[0].replace('**Assignee:**', '').trim();
 		if (rep_from_issue !== "") {
@@ -244,7 +240,7 @@ function getRepFromIssue(issue) {
 	return rep;
 }
 
-run() 
+run()
 	.then(result => {
 		console.log(result);
 	}, err => {
