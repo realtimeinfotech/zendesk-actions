@@ -49,7 +49,7 @@ function setZendeskTicketStatus(zendesk_id, caseStatus, issue) {
 	const auth_token_raw = getInput('zd_token');
 	const zendesk_base_url = getInput('zd_base_url')
 	const case_status_id = getInput('zd_case_status_id');
-	let payload = getTicketPayload(caseStatus, issue, case_status_id);
+	const payload = getTicketPayload(caseStatus, issue, case_status_id);
 	const encoded_token = Buffer.from(auth_token_raw).toString('base64')
 	let zd_req = axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
 		, {

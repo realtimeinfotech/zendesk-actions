@@ -38313,7 +38313,7 @@ function getZendeskIdFromIssue(issue) {
 		const zendesk_id = parseInt(title_parts[0]);
 		if (isNaN(zendesk_id)) {
 			(0,core.warning)("Cannot parse zendesk id");
-			return 0;
+			return;
 		}
 
 		return zendesk_id;
@@ -38338,7 +38338,7 @@ function setZendeskTicketStatus(zendesk_id, caseStatus, issue) {
 	const auth_token_raw = (0,core.getInput)('zd_token');
 	const zendesk_base_url = (0,core.getInput)('zd_base_url')
 	const case_status_id = (0,core.getInput)('zd_case_status_id');
-	let payload = getTicketPayload(caseStatus, issue, case_status_id);
+	const payload = getTicketPayload(caseStatus, issue, case_status_id);
 	const encoded_token = Buffer.from(auth_token_raw).toString('base64')
 	let zd_req = lib_axios.put(`${zendesk_base_url}/api/v2/tickets/${zendesk_id}.json`, payload
 		, {
