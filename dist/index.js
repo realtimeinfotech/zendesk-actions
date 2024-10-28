@@ -10796,9 +10796,6 @@ function getTicketPayload(column, issue, case_status_id) {
 					'custom_fields': [
 						{ 'id': case_status_id, 'value': `${column.zd_case_status}` }
 					]
-					,'followers': [
-						{ "user_id": 415082549274 }
-					]
 				}
 			};
 		}
