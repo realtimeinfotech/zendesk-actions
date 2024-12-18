@@ -38325,7 +38325,7 @@ function getZendeskIdFromIssue(issue) {
 
 function getZenDeskStatusFromLabel(labelName) {
 	const zendeskCaseStatus = {
-	'Awaiting Verification': 'programmer-resolved',
+		'Awaiting Verification': 'programmer-resolved',
 		'QA': 'qa',
 		'Returned to Support': 'programmer-returned'
 	};
@@ -38376,9 +38376,6 @@ function getTicketPayload(caseStatus, issue, case_status_id) {
 				'ticket': {
 					'custom_fields': [
 						{ 'id': case_status_id, 'value': `${caseStatus}` }
-					]
-					, 'followers': [
-						{ "user_id": 415082549274 }
 					]
 				}
 			};
